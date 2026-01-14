@@ -2,7 +2,7 @@ name: "playdelaybluelay-blog"
 description: "cloud tech blog"
 
 url: 'https://playdelaybluelay-stack.github.io' 
-baseurl: '/playdelaybluelay-stack.github.io'
+baseurl: ''
 
 markdown: kramdown
 markdown_ext: "markdown,mkdown,mkdn,mkd,md"
