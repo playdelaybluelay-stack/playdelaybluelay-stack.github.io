@@ -1,8 +1,8 @@
-name: "Jekyll true minimal theme"
-description: "Lightweight theme"
+name: "playdelaybluelay-blog"
+description: "cloud tech blog"
 
-url: '' 
-baseurl: ''
+url: 'https://playdelaybluelay-stack.github.io' 
+baseurl: '/playdelaybluelay-stack.github.io'
 
 markdown: kramdown
 markdown_ext: "markdown,mkdown,mkdn,mkd,md"
@@ -17,6 +17,7 @@ plugins:
 paginate: 10
 paginate_path: /page-:num
 
+# 댓글 기능 활성화 가능
 #disqus-id: your-disqus-id
 
 source: .
