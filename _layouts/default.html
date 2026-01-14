@@ -16,13 +16,26 @@
     {% endif %}
     
     <style>
+        body {
+            font-family: "Dotum", "돋움", sans-serif;
+            font-size: 12px; 
+            line-height: 1.8;
+            letter-spacing: -0.01em;
+            word-break: keep-all;
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+        code, pre {
+            font-family: "JetBrains Mono", monospace;
+        }
+
         .container {
-            max-width: 800px;
-            margin-left: 30%;
-            margin-right: auto;
-            padding: 0 20px;
-            }
-    
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
         @media (max-width: 768px) {
             .container {
                 margin-left: auto;
@@ -30,15 +43,17 @@
                 padding: 0 15px;
             }
         }
-        body {
-            font-family: Helvetica, "Noto Sans KR", sans-serif;
-            line-height: 1.75;
-            letter-spacing: -0.01em;
-            word-break: keep-all;
+
+        .post-content {
+            margin-left: 60px;
+            border-left: 1px solid #eeeeee;
+            padding-left: 20px;
         }
-    
-        code, pre {
-            font-family: "JetBrains Mono", monospace;
+
+        .post-title {
+            margin-left: 0;
+            font-weight: bold;
+            font-size: 1.8em;
         }
     </style>
 
