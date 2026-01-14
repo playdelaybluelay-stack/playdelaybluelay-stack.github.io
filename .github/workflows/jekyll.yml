@@ -24,7 +24,6 @@ jobs:
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          # 로컬 환경(3.4.8)과 호환성을 위해 3.3 또는 3.4 사용 권장
           ruby-version: '3.3' 
           bundler-cache: true
 
