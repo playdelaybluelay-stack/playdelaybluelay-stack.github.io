@@ -1,7 +1,8 @@
 ---
 layout: post
-title:  "Network (1)"
-date:   2026-01-14
+title: "Network (1) — IP 주소 체계와 서브네팅"
+date: 2026-01-14
+category: network
 ---
 
 topic

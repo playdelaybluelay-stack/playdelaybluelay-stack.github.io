@@ -1,1 +1,9 @@
-_site
+_site/
+.jekyll-cache/
+.ruby-lsp/
+.bundle/
+.sass-cache/
+vendor/
+*.swp
+.DS_Store
+Gemfile.lock
