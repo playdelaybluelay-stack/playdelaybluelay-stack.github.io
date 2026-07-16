@@ -1,12 +1,12 @@
 # 블로그 리디자인 설계
 
-2026년 7월 15일 확정. 시안 아티팩트: https://claude.ai/code/artifact/0fd2f9c2-6a81-4ac0-ac21-2dee7df2d59b
+2026년 7월 16일 확정. 시안 아티팩트: https://claude.ai/code/artifact/0fd2f9c2-6a81-4ac0-ac21-2dee7df2d59b
 
 ## 목표
 
 blog.fruitworld.dev의 정보 밀도와 maxkim-j.github.io의 절제를 참고해 개인 기술 블로그를 재설계한다. 요구사항은 네 가지다. 깔끔할 것, 필요한 정보만 첫 메뉴에 노출할 것, 라이트와 다크 모드를 지원할 것, 장기적으로 영문 전환이 가능할 것.
 
-리서치 대상: blog.fruitworld.dev, maxkim-j.github.io, overreacted.io, antfu.me, paco.me, blog.hoseung.me
+리서치 대상: blog.fruitworld.dev, maxkim-j.github.io, overreacted.io, antfu.me, paco.me, blog.hoseung.me, evan-moon.github.io, jbee.io, junghyeonsu.com
 
 ## 스택 결정: Jekyll에서 Hugo로 이전
 
@@ -36,23 +36,26 @@ blog.fruitworld.dev의 정보 밀도와 maxkim-j.github.io의 절제를 참고�
 | 날짜, 메타 | `#9aa59f` | `#5d6864` |
 | 구분선 | `#e4eae7` | `#252c29` |
 | 액센트 | `#0e7568` | `#56d4c4` |
-| 코드 배경 | `#10221e` (두 모드 공통) | `#0b100f` |
+| 코드 배경 | `#f3f6f5` | `#0b100f` |
 
-코드블록은 라이트 모드에서도 짙은 배경을 유지한다. 신택스 하이라이트 팔레트를 한 벌만 관리하고, 글 사이에 시각적 리듬이 생긴다.
+코드블록은 각 모드의 톤을 따른다. 라이트에서는 밝은 회녹색 바탕에 얇은 테두리, 다크에서는 짙은 배경. 신택스 하이라이트는 Chroma로 모드별 두 벌을 CSS 변수로 관리한다.
 
 ## 서체
 
 | 역할 | 서체 | 크기 |
 |---|---|---|
-| 글 제목 | MaruBuri (세리프) | 28px, 700 |
-| 본문 소제목 | MaruBuri | 21px, 650 |
-| 리스트 글 제목 | MaruBuri | 17px, 600 |
-| 본문 | Pretendard Variable | 16px, 행간 1.85 |
-| 설명 한 줄 | Pretendard | 14px |
-| 날짜, 메타 | Pretendard | 13px |
-| 코드 | JetBrains Mono | 13px |
+| 글 제목 | Paperlogy | 28px, 700 |
+| 본문 소제목 | Paperlogy | 21px, 700 |
+| 리스트 글 제목 | Paperlogy | 17px, 700 |
+| 본문 | KoPubWorld 돋움 | 16px, 행간 1.85 |
+| 설명 한 줄 | KoPubWorld 돋움 | 14px |
+| 날짜, 메타 | KoPubWorld 돋움 | 13px |
+| 코드 | D2Coding | 13.5px |
 
-- 웹폰트는 셀프호스팅한다(woff2 서브셋). 폴백은 시스템 한글 폰트.
+- 선정 기준: 가독성이 검증됐을 것, Pretendard처럼 어디서나 보이는 얼굴은 아닐 것.
+- 제목 대안은 경기천년제목과 Danjo, 본문 대안은 Wanted Sans와 리디바탕. 근거 사례: evan-moon.github.io가 KoPub 바탕과 Cormorant Garamond 페어링으로 운영 중.
+- D2Coding은 한글 주석과 영문 코드의 폭이 2:1이라 정렬이 깨지지 않는다.
+- 세 서체 모두 무료이고 셀프호스팅한다(woff2 서브셋). 폴백은 시스템 한글 폰트.
 - 본문 폭 42rem(672px), 한 줄 약 65자. `word-break: keep-all`.
 
 ## 사이트 구조
@@ -66,7 +69,7 @@ blog.fruitworld.dev의 정보 밀도와 maxkim-j.github.io의 절제를 참고�
 기존 글 URL은 Hugo permalinks 설정으로 동일하게 유지한다.
 ```
 
-헤더는 네 요소가 전부다: 워드마크 "yebin.log"(가칭, 사이트 설정 한 줄로 변경 가능), about, EN 버튼(번역이 있는 페이지에서만 렌더링), 테마 토글(해/달 아이콘). sticky + 배경 블러 유지.
+헤더는 다섯 요소가 전부다: 워드마크 "yebin.log"(가칭, 사이트 설정 한 줄로 변경 가능), about, GitHub 아이콘, EN 버튼(번역이 있는 페이지에서만 렌더링), 테마 토글(해/달 아이콘). sticky + 배경 블러 유지.
 
 푸터: 저작권 한 줄, GitHub, RSS.
 
@@ -74,7 +77,8 @@ blog.fruitworld.dev의 정보 밀도와 maxkim-j.github.io의 절제를 참고�
 
 ## 홈 화면
 
-- 히어로: 이름 "한예빈", 소개 두 문장(연재 소식 포함, GitHub 링크 인라인). 예: "클라우드와 네트워크를 공부하며 기록합니다. 요즘은 네트워크 기초 연재를 쓰고 있어요."
+- 히어로: 이름 "한예빈", 정직한 소개 두 문장. 예: "클라우드와 네트워크를 공부합니다. 이해한 만큼만 씁니다." GitHub는 텍스트 링크가 아니라 헤더 아이콘으로 둔다.
+- 히어로와 글 목록 사이에 가는 구분선 하나.
 - 글 목록: 최신순, 글마다 세 줄 구조.
   1. 제목 (세리프, 호버 시 액센트색으로 0.15초 전환. 그 외 효과 없음)
   2. 설명 한 줄 (front matter `description`, 손으로 쓴 훅 문장)
@@ -105,7 +109,7 @@ blog.fruitworld.dev의 정보 밀도와 maxkim-j.github.io의 절제를 참고�
 ### 본문 요소
 
 - 콜아웃: 왼쪽 3px 액센트 선, "**참고** — ..." 형식. Hugo shortcode로 제공.
-- 코드블록: 짙은 배경(두 모드 공통), 우상단에 언어 라벨 소문자("bash")와 복사 아이콘. 복사하면 아이콘이 체크 표시로 잠깐 바뀐다.
+- 코드블록: 각 모드의 톤(라이트는 밝은 바탕에 테두리), 우상단에 언어 라벨 소문자("bash")와 복사 아이콘. 복사하면 아이콘이 체크 표시로 잠깐 바뀐다.
 - 표, 인용, 이미지는 현행 스타일을 톤에 맞게 이식.
 
 ## 인터랙션
