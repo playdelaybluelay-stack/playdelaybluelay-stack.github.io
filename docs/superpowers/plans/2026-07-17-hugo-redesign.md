@@ -253,9 +253,6 @@ toEnglish: "영어판으로 보기"
 toc: "목차"
 copyCode: "코드 복사"
 copied: "복사됨"
-seriesNote: "%s 연재의 %d편입니다."
-minutes: "%d분"
-edited: "%s 고침"
 ```
 
 `i18n/en.yaml`:
@@ -268,9 +265,6 @@ toEnglish: "Read in English"
 toc: "Table of contents"
 copyCode: "Copy code"
 copied: "Copied"
-seriesNote: "Part %d of the %s series."
-minutes: "%d min"
-edited: "Edited %s"
 ```
 
 - [ ] **Step 2: main.css 작성 (토큰 → 베이스 → 컴포넌트 순)**
@@ -651,7 +645,7 @@ draft: false
     <li class="post-item">
       <h2><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
       {{ with .Description }}<p class="desc">{{ . }}</p>{{ end }}
-      <p class="when">{{ .Date | time.Format "2006년 1월 2일" }}, {{ i18n "minutes" .ReadingTime }}</p>
+      <p class="when">{{ .Date | time.Format "2006년 1월 2일" }}, {{ .ReadingTime }}분</p>
     </li>
     {{ end }}
   </ul>
@@ -727,7 +721,7 @@ git commit -m "feat: 홈 화면 - 히어로와 글 목록"
     <p class="series-note"><a href="{{ (site.GetPage "/series").RelPermalink }}#{{ .Params.series_slug }}">{{ $series }} 연재</a>의 {{ $idx }}편입니다.</p>
   {{ end }}
   <h1 class="post-title">{{ .Title }}</h1>
-  <p class="post-meta">{{ .Date | time.Format "2006년 1월 2일" }}, {{ i18n "minutes" .ReadingTime }}{{ if ne .Lastmod .Date }}, {{ .Lastmod | time.Format "2006년 1월 2일" }} 고침{{ end }}</p>
+  <p class="post-meta">{{ .Date | time.Format "2006년 1월 2일" }}, {{ .ReadingTime }}분{{ if ne .Lastmod .Date }}, {{ .Lastmod | time.Format "2006년 1월 2일" }} 고침{{ end }}</p>
   {{ partial "toc-linemap.html" . }}
   <div class="post-body">{{ .Content }}</div>
   {{ with .Params.tags }}
