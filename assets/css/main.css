@@ -115,7 +115,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}
 .codeblock pre{background:var(--code-bg);color:var(--code-text);border:1px solid var(--border);
   border-radius:8px;padding:16px 18px;overflow-x:auto;line-height:1.7}
 .codeblock .cb-bar{position:absolute;top:6px;right:8px;display:flex;align-items:center;gap:4px}
-.cb-lang{font-size:12px;color:var(--text-2)}
+.cb-lang{font-size:12px;color:var(--text-2);text-transform:lowercase}
 .cb-copy{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;
   background:none;border:none;color:var(--text-2);cursor:pointer}
 .cb-copy:hover{color:var(--text)}
