@@ -7,3 +7,7 @@ vendor/
 *.swp
 .DS_Store
 Gemfile.lock
+
+public/
+resources/
+.hugo_build.lock
