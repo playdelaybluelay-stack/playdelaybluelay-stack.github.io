@@ -32,4 +32,6 @@
   </nav>
   {{ end }}
 </article>
+{{ $copy := resources.Get "js/copy.js" | minify }}
+<script src="{{ $copy.RelPermalink }}" defer></script>
 {{ end }}
