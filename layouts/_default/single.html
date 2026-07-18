@@ -1,0 +1,35 @@
+{{ define "main" }}
+{{ $series := .Params.series }}
+{{ $siblings := slice }}
+{{ if $series }}
+  {{ $siblings = where (where site.RegularPages "Section" "posts") "Params.series" $series }}
+  {{ $siblings = sort $siblings "Date" "asc" }}
+{{ end }}
+<article class="post wrap">
+  {{ if $series }}
+    {{ $idx := 0 }}
+    {{ range $i, $p := $siblings }}{{ if eq $p.Permalink $.Permalink }}{{ $idx = add $i 1 }}{{ end }}{{ end }}
+    <p class="series-note"><a href="{{ (site.GetPage "/series").RelPermalink }}#{{ .Params.series_slug }}">{{ $series }} 연재</a>의 {{ $idx }}편입니다.</p>
+  {{ end }}
+  <h1 class="post-title">{{ .Title }}</h1>
+  <p class="post-meta">{{ .Date | time.Format "2006년 1월 2일" }}, {{ .ReadingTime }}분{{ if ne .Lastmod .Date }}, {{ .Lastmod | time.Format "2006년 1월 2일" }} 고침{{ end }}</p>
+  {{ partial "toc-linemap.html" . }}
+  <div class="post-body">{{ .Content }}</div>
+  {{ with .Params.tags }}
+  <p class="post-tags">{{ range $i, $t := . }}{{ if $i }}, {{ end }}<a href="{{ (printf "/tags/%s/" ($t | urlize)) | relLangURL }}">{{ $t }}</a>{{ end }}</p>
+  {{ end }}
+  {{ if $series }}
+  <nav class="foot-nav" aria-label="연재 이동">
+    {{ $prev := "" }}{{ $next := "" }}
+    {{ range $i, $p := $siblings }}
+      {{ if eq $p.Permalink $.Permalink }}
+        {{ if gt $i 0 }}{{ $prev = index $siblings (sub $i 1) }}{{ end }}
+        {{ if lt (add $i 1) (len $siblings) }}{{ $next = index $siblings (add $i 1) }}{{ end }}
+      {{ end }}
+    {{ end }}
+    {{ with $prev }}<a href="{{ .RelPermalink }}">← {{ .Title }}</a>{{ end }}
+    {{ with $next }}<a class="next" href="{{ .RelPermalink }}">{{ .Title }} →</a>{{ end }}
+  </nav>
+  {{ end }}
+</article>
+{{ end }}
