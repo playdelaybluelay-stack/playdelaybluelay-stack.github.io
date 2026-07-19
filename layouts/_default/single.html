@@ -34,4 +34,6 @@
 </article>
 {{ $copy := resources.Get "js/copy.js" | minify }}
 <script src="{{ $copy.RelPermalink }}" defer></script>
+{{ $toc := resources.Get "js/toc.js" | minify }}
+<script src="{{ $toc.RelPermalink }}" defer></script>
 {{ end }}
