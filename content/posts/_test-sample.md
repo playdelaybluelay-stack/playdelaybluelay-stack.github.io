@@ -4,6 +4,9 @@ date: 2026-07-17
 description: "레이아웃 검증을 위한 임시 글입니다."
 tags: [검증]
 draft: false
+series: "네트워크 기초"
+series_slug: network-basics
+series_total: 3
 ---
 
 ## 첫 번째 섹션

@@ -1,0 +1,31 @@
+{{ define "main" }}
+<div class="series-page wrap">
+  <h1>{{ .Title }}</h1>
+  {{ $posts := where site.RegularPages "Section" "posts" }}
+  {{ $bySeries := dict }}
+  {{ range $p := $posts }}
+    {{ with $p.Params.series }}
+      {{ $cur := index $bySeries . | default slice }}
+      {{ $bySeries = merge $bySeries (dict . ($cur | append $p)) }}
+    {{ end }}
+  {{ end }}
+  {{ range $name, $pages := $bySeries }}
+  {{ $pages = sort $pages "Date" "asc" }}
+  {{ $slug := (index $pages 0).Params.series_slug }}
+  {{ $total := (index $pages 0).Params.series_total }}
+  <section class="series-block">
+    <h2 id="{{ $slug }}">{{ $name }}<span class="count">
+      {{- if and $total (lt (len $pages) (int $total)) }}{{ $total }}편 중 {{ len $pages }}편{{ else }}{{ len $pages }}편{{ end -}}
+    </span></h2>
+    <ol class="linemap">
+      {{ range $pages }}<li class="done"><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>{{ end }}
+      {{ with (index $pages 0).Params.series_upcoming }}<li class="todo">{{ . }}, 쓰는 중</li>{{ end }}
+    </ol>
+  </section>
+  {{ end }}
+  <div class="tag-list">
+    <h2>태그</h2>
+    <p>{{ range $i, $t := site.Taxonomies.tags.ByCount }}{{ if $i }}, {{ end }}<a href="{{ $t.Page.RelPermalink }}">{{ $t.Page.Title }} {{ $t.Count }}</a>{{ end }}</p>
+  </div>
+</div>
+{{ end }}
