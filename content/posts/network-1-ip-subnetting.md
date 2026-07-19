@@ -1,8 +1,11 @@
 ---
-layout: post
 title: "Network (1) — IP 주소 체계와 서브네팅"
 date: 2026-01-14
-category: network
+url: /network/2026/01/14/network-1-ip-subnetting.html
+description: "사설망 하나가 수백 개의 주소로 쪼개지는 과정을 계산해봅니다."
+tags: [네트워크]
+series: "네트워크 기초"
+series_slug: network-basics
 ---
 
 topic
