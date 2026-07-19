@@ -1,0 +1,25 @@
+서체 라이선스 고지
+
+이 디렉토리에는 다음의 오픈소스 서체들이 포함되어 있습니다.
+
+D2Coding.woff2
+- 서체: D2Coding
+- 저작권자: NAVER
+- 라이선스: SIL Open Font License 1.1
+- 출처: https://github.com/naver/d2codingfont
+
+Paperlogy-7Bold.woff2
+- 서체: Paperlogy 7Bold
+- 저작권자: Paperlogy 원저작자
+- 라이선스: SIL Open Font License 1.1
+- 출처: https://github.com/fonts-archive/Paperlogy
+
+KoPubWorldDotum-Regular.woff2, KoPubWorldDotum-Bold.woff2
+- 서체: KoPubWorld 돋움
+- 저작권자: 한국출판인회의
+- 라이선스: KoPubWorld 서체 라이선스
+- 출처: https://github.com/adrinerDP/font-kopubworld
+
+---
+
+이 디렉토리의 서체 파일은 각 라이선스 조건에 따라 재배포됩니다.

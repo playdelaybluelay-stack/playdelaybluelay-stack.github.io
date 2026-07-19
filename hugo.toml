@@ -1,0 +1,33 @@
+baseURL = "https://playdelaybluelay-stack.github.io/"
+title = "한예빈"
+languageCode = "ko"
+defaultContentLanguage = "ko"
+hasCJKLanguage = true
+enableRobotsTXT = true
+
+[languages]
+  [languages.ko]
+    languageName = "한국어"
+    weight = 1
+  [languages.en]
+    languageName = "English"
+    weight = 2
+    disabled = true # 영문 글이 생기면 false로
+
+[taxonomies]
+  tag = "tags"
+
+[params]
+  author = "한예빈"
+  bio = "클라우드와 네트워크를 공부합니다."
+  github = "https://github.com/playdelaybluelay-stack"
+
+[markup.highlight]
+  noClasses = false
+  codeFences = true
+
+[markup.goldmark.parser.attribute]
+  title = true
+
+[outputs]
+  home = ["HTML", "RSS"]

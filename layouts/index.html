@@ -1,0 +1,18 @@
+{{ define "main" }}
+<div class="wrap">
+  <section class="hero">
+    <h1>{{ site.Params.author }}</h1>
+    <p>{{ site.Params.bio }}
+      {{ with site.GetPage "/series" }}지금은 <a href="{{ .RelPermalink }}#network-basics">네트워크 기초 연재</a>를 쓰고 있습니다.{{ end }}</p>
+  </section>
+  <ul class="post-list">
+    {{ range where site.RegularPages "Section" "posts" }}
+    <li class="post-item">
+      <h2><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
+      {{ with .Description }}<p class="desc">{{ . }}</p>{{ end }}
+      <p class="when">{{ .Date | time.Format "2006년 1월 2일" }}, {{ .ReadingTime }}분</p>
+    </li>
+    {{ end }}
+  </ul>
+</div>
+{{ end }}
