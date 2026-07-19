@@ -7,13 +7,13 @@
 <details class="toc-mobile">
   <summary>{{ i18n "toc" }}</summary>
   <nav aria-label="{{ i18n "toc" }}">
-    <ol class="linemap">
+    <ol class="linemap" role="list">
       {{ range $items }}<li><a href="#{{ .id }}">{{ .text }}</a></li>{{ end }}
     </ol>
   </nav>
 </details>
 <nav class="toc-desktop" aria-label="{{ i18n "toc" }}">
-  <ol class="linemap">
+  <ol class="linemap" role="list">
     {{ range $items }}<li><a href="#{{ .id }}">{{ .text }}</a></li>{{ end }}
   </ol>
 </nav>
