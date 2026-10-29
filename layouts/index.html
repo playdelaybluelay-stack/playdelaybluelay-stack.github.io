@@ -2,8 +2,7 @@
 <div class="wrap">
   <section class="hero">
     <h1>{{ site.Params.author }}</h1>
-    <p>{{ site.Params.bio }}
-      {{ with site.GetPage "/series" }}지금은 <a href="{{ .RelPermalink }}#network-basics">네트워크 기초 연재</a>를 쓰고 있습니다.{{ end }}</p>
+    <p>{{ site.Params.bio }}</p>
   </section>
   <ul class="post-list">
     {{ range where site.RegularPages "Section" "posts" }}
