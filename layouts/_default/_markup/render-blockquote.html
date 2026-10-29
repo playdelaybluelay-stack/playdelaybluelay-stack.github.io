@@ -1,0 +1,6 @@
+{{ if eq .Type "alert" }}
+{{- $title := .AlertTitle | default (i18n (printf "alert_%s" .AlertType)) | default (i18n "alert_note") -}}
+<div class="callout callout-{{ .AlertType }}">{{ replaceRE `^\s*<p>` (printf "<p><b>%s</b> — " $title) .Text 1 | safeHTML }}</div>
+{{ else }}
+<blockquote>{{ .Text }}</blockquote>
+{{ end }}

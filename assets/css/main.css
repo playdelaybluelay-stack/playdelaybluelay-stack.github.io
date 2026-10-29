@@ -148,6 +148,7 @@ a{color:inherit}
 .post{padding-top:48px;padding-bottom:96px}
 .post-title{font-size:28px;font-weight:800;line-height:1.4;letter-spacing:-.02em;text-wrap:balance}
 .post-book{font-size:13px;color:var(--text-3);margin-bottom:8px}
+.post-title:not(:has(+ .post-meta)){margin-bottom:32px}
 .post-meta{margin:10px 0 40px;font-size:13px;color:var(--text-3)}
 .post-body>h2{font-size:21px;font-weight:700;margin:2.4em 0 .7em;line-height:1.45;letter-spacing:-.015em;text-wrap:balance;scroll-margin-top:calc(var(--header-h) + 16px)}
 .post-body>h3{font-size:17.5px;font-weight:650;margin:1.9em 0 .55em;line-height:1.5;text-wrap:balance;scroll-margin-top:calc(var(--header-h) + 16px)}
