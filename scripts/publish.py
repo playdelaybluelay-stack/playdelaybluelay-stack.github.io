@@ -91,6 +91,43 @@ def to_front_matter(meta: dict, fallback_title: str) -> str:
     return "\n".join(out) + "\n"
 
 
+# ---- safety ----
+
+SAFETY_PATTERNS = (
+    ("이메일", re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")),
+    ("전화번호", re.compile(r"\b01[016789]-?\d{3,4}-?\d{4}\b")),
+    ("로컬 경로", re.compile(r"/Users/[^/\s]+|(?<![\w.])~/")),
+    ("사설 IP", re.compile(r"\b(?:10\.\d{1,3}|192\.168|172\.(?:1[6-9]|2\d|3[01]))\.\d{1,3}\.\d{1,3}\b")),
+    ("토큰", re.compile(
+        r"sk-[A-Za-z0-9_-]{20,}|ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{20,}"
+        r"|AKIA[0-9A-Z]{16}|xox[abprs]-[A-Za-z0-9-]+|-----BEGIN"
+    )),
+)
+
+
+def load_denylist(vault: Path) -> list[str]:
+    path = vault / ".publish-denylist"
+    if not path.exists():
+        return []
+    words = (line.strip() for line in path.read_text(encoding="utf-8").splitlines())
+    return [w for w in words if w and not w.startswith("#")]
+
+
+def check_safety(text: str, denylist: list[str], allowed_emails: set[str]) -> list[str]:
+    problems = []
+    for n, line in enumerate(text.split("\n"), 1):
+        for kind, pattern in SAFETY_PATTERNS:
+            for m in pattern.finditer(line):
+                if kind == "이메일" and m.group(0) in allowed_emails:
+                    continue
+                problems.append(f"줄 {n}: {kind} ({m.group(0)[:6]}…)")
+        lowered = line.lower()
+        for word in denylist:
+            if word.lower() in lowered:
+                problems.append(f"줄 {n}: 차단어 ({word})")
+    return problems
+
+
 # ---- body ----
 
 def heading_anchor(heading: str) -> str:
