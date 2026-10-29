@@ -8,17 +8,11 @@ D2Coding.woff2
 - 라이선스: SIL Open Font License 1.1
 - 출처: https://github.com/naver/d2codingfont
 
-Paperlogy-7Bold.woff2
-- 서체: Paperlogy 7Bold
-- 저작권자: Paperlogy 원저작자
+SUIT-Variable.woff2
+- 서체: SUIT Variable (KS X 1001 한글과 라틴, 기호로 서브셋)
+- 저작권자: Copyright (c) 2022, SUNN (http://sun.fo/suit), with Reserved Font Name SUIT.
 - 라이선스: SIL Open Font License 1.1
-- 출처: https://github.com/fonts-archive/Paperlogy
-
-KoPubWorldDotum-Regular.woff2, KoPubWorldDotum-Bold.woff2
-- 서체: KoPubWorld 돋움
-- 저작권자: 한국출판인회의
-- 라이선스: KoPubWorld 서체 라이선스
-- 출처: https://github.com/adrinerDP/font-kopubworld
+- 출처: https://github.com/sun-typeface/SUIT (v2.0.5)
 
 ---
 

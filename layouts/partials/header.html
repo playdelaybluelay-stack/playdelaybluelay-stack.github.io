@@ -2,7 +2,8 @@
   <div class="wrap">
     <a class="wordmark" href="{{ "/" | relLangURL }}">{{ site.Title }}</a>
     <nav class="site-nav" aria-label="사이트">
-      <a href="{{ "/series/" | relLangURL }}">series</a>
+      <a href="{{ "/projects/" | relLangURL }}">projects</a>
+      {{ with site.GetPage "/notes" }}{{ if .RegularPages }}<a href="{{ .RelPermalink }}">notes</a>{{ end }}{{ end }}
       <a href="{{ "/about/" | relLangURL }}">about</a>
       {{ range .Translations }}
       <a class="lang-switch" href="{{ .Permalink }}" hreflang="{{ .Language.Lang }}"
@@ -23,7 +24,7 @@
 <script>
 (function(){
   var b=document.querySelector(".theme-toggle"),r=document.documentElement;
-  var L={dark:{{ i18n "themeToggleToLight" | jsonify }},light:{{ i18n "themeToggleToDark" | jsonify }}};
+  var L={dark:"{{ i18n "themeToggleToLight" }}",light:"{{ i18n "themeToggleToDark" }}"};
   function sync(){var d=r.dataset.theme==="dark";
     b.querySelector(".icon-moon").hidden=d;b.querySelector(".icon-sun").hidden=!d;
     b.setAttribute("aria-label",d?L.dark:L.light)}
@@ -31,11 +32,12 @@
     r.dataset.theme=r.dataset.theme==="dark"?"light":"dark";
     localStorage.setItem("theme",r.dataset.theme);sync()});
   sync();
-  if(document.body.classList.contains("home")){
-    var hero=document.querySelector(".hero");
-    if(hero&&"IntersectionObserver"in window){
-      new IntersectionObserver(function(e){
-        document.body.classList.toggle("scrolled",!e[0].isIntersecting)
-      }).observe(hero)}}
+  document.addEventListener("DOMContentLoaded",function(){
+    if(document.body.classList.contains("home")){
+      var hero=document.querySelector(".hero");
+      if(hero&&"IntersectionObserver"in window){
+        new IntersectionObserver(function(e){
+          document.body.classList.toggle("scrolled",!e[0].isIntersecting)
+        }).observe(hero)}}});
 })();
 </script>
