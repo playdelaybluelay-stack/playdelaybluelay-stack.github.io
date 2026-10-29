@@ -4,7 +4,11 @@
   {{ range $p.Params.milestones }}
   <li class="ms-{{ .state }}"{{ if eq .state "active" }} aria-current="step"{{ end }}>
     <span class="ms-id">{{ .id }}</span>
-    {{ if eq $.layout "column" }}<span class="ms-title">{{ .title }}</span>{{ with .done_on }}<span class="ms-when">{{ time.Format "2006년 1월" (printf "%s-01" .) }}</span>{{ end }}{{ end }}
+    {{ if eq $.layout "column" }}
+    <span class="ms-title">{{ .title }}</span>{{ with .done_on }}<span class="ms-when">{{ time.Format "2006년 1월" (printf "%s-01" .) }}</span>{{ end }}
+    {{ $posts := sort (where (where site.RegularPages "Params.project" $p.File.ContentBaseName) "Params.milestone" .id) "Date" }}
+    {{ with $posts }}<ul class="ms-posts">{{ range . }}<li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>{{ end }}</ul>{{ end }}
+    {{ end }}
     <span class="sr-only">{{ index $state .state }}</span>
   </li>
   {{ end }}
