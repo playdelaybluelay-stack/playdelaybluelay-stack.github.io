@@ -1,0 +1,12 @@
+{{ $p := .page }}
+{{ $state := dict "done" "완료" "active" "진행 중" "planned" "예정" }}
+<ol class="ms ms-{{ .layout }}" role="list">
+  {{ range $p.Params.milestones }}
+  <li class="ms-{{ .state }}"{{ if eq .state "active" }} aria-current="step"{{ end }}>
+    <span class="ms-id">{{ .id }}</span>
+    {{ if eq $.layout "column" }}<span class="ms-title">{{ .title }}</span>{{ with .done_on }}<span class="ms-when">{{ time.Format "2006년 1월" (printf "%s-01" .) }}</span>{{ end }}{{ end }}
+    <span class="sr-only">{{ index $state .state }}</span>
+  </li>
+  {{ end }}
+</ol>
+{{ if eq .layout "row" }}{{ range $p.Params.milestones }}{{ if eq .state "active" }}<p class="ms-now">{{ .title }}</p>{{ end }}{{ end }}{{ end }}

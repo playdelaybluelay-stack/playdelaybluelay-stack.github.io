@@ -1,7 +1,8 @@
 {{ define "main" }}
 <article class="post wrap">
+  {{ if eq .Section "notes" }}<p class="post-book">『{{ .Params.book }}』, {{ .Params.book_author }}</p>{{ end }}
   <h1 class="post-title">{{ .Title }}</h1>
-  {{ if eq .Section "posts" }}
+  {{ if in (slice "posts" "notes") .Section }}
   <p class="post-meta">{{ .Date | time.Format "2006년 1월 2일" }}, {{ .ReadingTime }}분{{ if ne .Lastmod .Date }}, {{ .Lastmod | time.Format "2006년 1월 2일" }} 고침{{ end }}</p>
   {{ end }}
   {{ partial "toc-linemap.html" . }}

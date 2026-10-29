@@ -19,7 +19,8 @@ enableRobotsTXT = true
 
 [params]
   author = "한예빈"
-  bio = "클라우드와 네트워크를 공부합니다."
+  bio = "클라우드 인프라를 직접 설계하고 운영하며 기록합니다."
+  email = "yebinhaan@gmail.com"
   github = "https://github.com/playdelaybluelay-stack"
 
 [markup.highlight]

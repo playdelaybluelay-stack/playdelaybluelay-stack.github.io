@@ -4,14 +4,31 @@
     <h1>{{ site.Params.author }}</h1>
     <p>{{ site.Params.bio }}</p>
   </section>
-  <ul class="post-list">
-    {{ range where site.RegularPages "Section" "posts" }}
-    <li class="post-item">
-      <h2><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
+  {{ $active := sort (where (where site.RegularPages "Section" "projects") "Params.status" "active") "Params.started" }}
+  {{ with $active }}
+  <section class="home-section" aria-labelledby="home-projects">
+    <h2 class="label" id="home-projects">프로젝트</h2>
+    {{ range . }}
+    <div class="project-block">
+      <h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
       {{ with .Description }}<p class="desc">{{ . }}</p>{{ end }}
-      <p class="when">{{ .Date | time.Format "2006년 1월 2일" }}, {{ .ReadingTime }}분</p>
-    </li>
+      {{ partial "milestones.html" (dict "page" . "layout" "row") }}
+    </div>
     {{ end }}
-  </ul>
+  </section>
+  {{ end }}
+  <section class="home-section" aria-labelledby="home-posts">
+    <h2 class="label" id="home-posts">글</h2>
+    {{ $pager := .Paginate (where site.RegularPages "Section" "in" (slice "posts" "notes")) 20 }}
+    <ul class="post-list">
+      {{ range $pager.Pages }}{{ partial "post-item.html" (dict "page" . "h" 3) }}{{ end }}
+    </ul>
+    {{ if or $pager.HasPrev $pager.HasNext }}
+    <nav class="pager" aria-label="글 목록 페이지">
+      {{ with $pager.Prev }}<a href="{{ .URL }}">← 최근 글</a>{{ end }}
+      {{ with $pager.Next }}<a class="older" href="{{ .URL }}">이전 글 →</a>{{ end }}
+    </nav>
+    {{ end }}
+  </section>
 </div>
 {{ end }}
