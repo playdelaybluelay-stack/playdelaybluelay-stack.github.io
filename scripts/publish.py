@@ -277,7 +277,9 @@ def plan_actions(vault: Path, content_dir: Path, allowed: set[str]) -> list:
         notes.append(dict(path=path, text=text, meta=meta, body=body, section=section,
                           slug=str(meta.get("slug") or path.stem), errors=errors))
 
-    seen = {(n["section"], n["slug"]) for n in notes}
+    # 발행 대상이었던 노트의 slug는 섹션과 상관없이 지우지 않는다. front matter가 깨진 노트가 있으면 아무것도 지우지 않는다.
+    seen = {n["slug"] for n in notes}
+    unparsed = any(a.kind == "abort" for a in actions)
     counts = Counter(n["slug"] for n in notes)
     for n in notes:
         if counts[n["slug"]] > 1:
@@ -317,7 +319,7 @@ def plan_actions(vault: Path, content_dir: Path, allowed: set[str]) -> list:
         if not base.is_dir():
             continue
         for bundle in sorted(base.iterdir()):
-            if bundle.is_dir() and (section, bundle.name) not in seen and _is_generated(bundle):
+            if bundle.is_dir() and not unparsed and bundle.name not in seen and _is_generated(bundle):
                 actions.append(Action("delete", bundle.name, f"{section}/{bundle.name}", bundle, None))
     return actions
 

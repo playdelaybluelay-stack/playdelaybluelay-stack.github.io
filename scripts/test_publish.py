@@ -285,6 +285,20 @@ class SyncTest(unittest.TestCase):
         self.run_write()
         self.assertTrue((self.content / "posts" / "hello" / "index.md").exists())
 
+    def test_invalid_section_keeps_previous_bundle(self):
+        self.write("Hello.md", note())
+        self.run_write()
+        self.write("Hello.md", note(extra="section: post\n"))
+        self.assertEqual(self.kinds(), [("abort", "hello")])
+
+    def test_broken_front_matter_blocks_deletions(self):
+        self.write("Hello.md", note())
+        self.run_write()
+        self.write("Hello.md", "---\npublish: true\nslug: hello\nfoo:\n  bar: 1\n---\n본문")
+        kinds = [a.kind for a in self.plan()]
+        self.assertNotIn("delete", kinds)
+        self.assertIn("abort", kinds)
+
     def test_links_between_published_notes(self):
         self.write("First.md", note(slug="first", body="[[Second]] 참고, [[Secret]]"))
         self.write("Second.md", note(slug="second"))
