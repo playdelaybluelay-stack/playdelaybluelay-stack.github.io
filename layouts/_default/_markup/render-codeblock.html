@@ -1,0 +1,11 @@
+<div class="codeblock">
+  <div class="cb-bar">
+    {{ with .Type }}<span class="cb-lang">{{ . }}</span>{{ end }}
+    <button class="cb-copy" type="button" aria-label="{{ i18n "copyCode" }}" data-copied="{{ i18n "copied" }}">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+    </button>
+    <span class="cb-live" aria-live="polite"></span>
+  </div>
+  {{ highlight .Inner .Type .Options }}
+</div>

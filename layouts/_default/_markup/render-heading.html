@@ -1,0 +1,3 @@
+<h{{ .Level }} id="{{ .Anchor | safeURL }}">{{ .Text | safeHTML }}
+{{- if eq .Level 2 }} <a class="anchor" href="#{{ .Anchor | safeURL }}" aria-label="{{ .PlainText }} 섹션 링크">#</a>{{ end -}}
+</h{{ .Level }}>

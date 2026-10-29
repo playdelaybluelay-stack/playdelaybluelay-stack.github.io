@@ -1,0 +1,20 @@
+{{ $h2s := findRE `<h2[^>]*id="([^"]+)"[^>]*>` .Content }}
+{{ if gt (len $h2s) 3 }}
+{{ $items := slice }}
+{{ range findRESubmatch `<h2[^>]*id="([^"]+)"[^>]*>(.*?) <a` .Content }}
+  {{ $items = $items | append (dict "id" (index . 1) "text" (index . 2 | plainify)) }}
+{{ end }}
+<details class="toc-mobile">
+  <summary>{{ i18n "toc" }}</summary>
+  <nav aria-label="{{ i18n "toc" }}">
+    <ol class="linemap" role="list">
+      {{ range $items }}<li><a href="#{{ .id }}">{{ .text }}</a></li>{{ end }}
+    </ol>
+  </nav>
+</details>
+<nav class="toc-desktop" aria-label="{{ i18n "toc" }}">
+  <ol class="linemap" role="list">
+    {{ range $items }}<li><a href="#{{ .id }}">{{ .text }}</a></li>{{ end }}
+  </ol>
+</nav>
+{{ end }}
