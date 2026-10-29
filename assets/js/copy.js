@@ -5,8 +5,13 @@ document.querySelectorAll(".codeblock").forEach(function (block) {
   var orig = btn.innerHTML;
   var timer = null;
   btn.addEventListener("click", function () {
-    var code = block.querySelector("pre code") || block.querySelector("pre");
-    navigator.clipboard.writeText(code.innerText).then(function () {
+    var code = (block.querySelector("pre code") || block.querySelector("pre")).cloneNode(true);
+    code.querySelectorAll(".gp").forEach(function (p) {
+      var next = p.nextSibling;
+      if (next && next.nodeType === 3) next.textContent = next.textContent.replace(/^ /, "");
+      p.remove();
+    });
+    navigator.clipboard.writeText(code.textContent).then(function () {
       btn.innerHTML =
         '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
       live.textContent = btn.dataset.copied;
