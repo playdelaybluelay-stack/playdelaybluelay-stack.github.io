@@ -1,0 +1,14 @@
+{{ define "main" }}
+<div class="series-page wrap">
+  <h1>{{ .Title }}</h1>
+  <ul class="post-list" style="padding-top:32px">
+    {{ range .Pages }}
+    <li class="post-item">
+      <h2><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
+      {{ with .Description }}<p class="desc">{{ . }}</p>{{ end }}
+      <p class="when">{{ .Date | time.Format "2006년 1월 2일" }}, {{ .ReadingTime }}분</p>
+    </li>
+    {{ end }}
+  </ul>
+</div>
+{{ end }}

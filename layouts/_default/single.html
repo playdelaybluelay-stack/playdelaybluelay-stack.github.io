@@ -20,7 +20,7 @@
   {{ with .Params.tags }}
   <p class="post-tags">{{ range $i, $t := . }}{{ if $i }}, {{ end }}<a href="{{ (printf "/tags/%s/" ($t | urlize)) | relLangURL }}">{{ $t }}</a>{{ end }}</p>
   {{ end }}
-  {{ if $series }}
+  {{ if and $series (gt (len $siblings) 1) }}
   <nav class="foot-nav" aria-label="연재 이동">
     {{ $prev := "" }}{{ $next := "" }}
     {{ range $i, $p := $siblings }}

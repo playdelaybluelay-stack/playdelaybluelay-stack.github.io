@@ -1,0 +1,6 @@
+{{ define "main" }}
+<div class="series-page wrap">
+  <h1>태그</h1>
+  <p class="tag-list" style="margin-top:0;padding-top:0;border-top:none">{{ range $i, $t := site.Taxonomies.tags.ByCount }}{{ if $i }}, {{ end }}<a href="{{ $t.Page.RelPermalink }}">{{ $t.Page.Title }} {{ $t.Count }}</a>{{ end }}</p>
+</div>
+{{ end }}
