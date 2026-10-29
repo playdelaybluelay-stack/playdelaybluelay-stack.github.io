@@ -17,10 +17,10 @@
   --header-h:57px;
 }
 @media (prefers-color-scheme:dark){:root{
-  --bg:#101413; --text:#e3e9e6; --text-2:#93a09b; --text-3:#7f8a85;
-  --border:#252c29; --surface:#181d1b;
+  --bg:#161918; --text:#e3e8e6; --text-2:#979f9c; --text-3:#858d8a;
+  --border:#2b302e; --surface:#1e2221;
   --accent:#52c4b0; --station:#d9ad5c;
-  --code-bg:#0b100f; --code-text:#bcd4cc; --code-comment:#6d938a; --code-keyword:#7fd8c9;
+  --code-bg:#111413; --code-text:#bcd4cc; --code-comment:#6d938a; --code-keyword:#7fd8c9;
   --code-string:#d9b98a; --hl-line:rgba(82,196,176,0.10);
   --code-name:#9bbbe6; --code-number:#dba3c6; --code-punct:#93a09b;
   --code-prompt:#7f8a85; --code-output:#93a09b; --code-error:#e58a7a;
@@ -37,10 +37,10 @@
   --diff-add:rgba(14,117,104,.08); --diff-del:rgba(163,58,42,.08);
 }
 :root[data-theme=dark]{
-  --bg:#101413; --text:#e3e9e6; --text-2:#93a09b; --text-3:#7f8a85;
-  --border:#252c29; --surface:#181d1b;
+  --bg:#161918; --text:#e3e8e6; --text-2:#979f9c; --text-3:#858d8a;
+  --border:#2b302e; --surface:#1e2221;
   --accent:#52c4b0; --station:#d9ad5c;
-  --code-bg:#0b100f; --code-text:#bcd4cc; --code-comment:#6d938a; --code-keyword:#7fd8c9;
+  --code-bg:#111413; --code-text:#bcd4cc; --code-comment:#6d938a; --code-keyword:#7fd8c9;
   --code-string:#d9b98a; --hl-line:rgba(82,196,176,0.10);
   --code-name:#9bbbe6; --code-number:#dba3c6; --code-punct:#93a09b;
   --code-prompt:#7f8a85; --code-output:#93a09b; --code-error:#e58a7a;
@@ -150,6 +150,7 @@ a{color:inherit}
 .post-book{font-size:13px;color:var(--text-3);margin-bottom:8px}
 .post-title:not(:has(+ .post-meta)){margin-bottom:32px}
 .post-meta{margin:10px 0 40px;font-size:13px;color:var(--text-3)}
+.post-meta .status{display:block;margin-top:2px}
 .post-body>h2{font-size:21px;font-weight:700;margin:2.4em 0 .7em;line-height:1.45;letter-spacing:-.015em;text-wrap:balance;scroll-margin-top:calc(var(--header-h) + 16px)}
 .post-body>h3{font-size:17.5px;font-weight:650;margin:1.9em 0 .55em;line-height:1.5;text-wrap:balance;scroll-margin-top:calc(var(--header-h) + 16px)}
 .post-body>h2+h3{margin-top:1em}

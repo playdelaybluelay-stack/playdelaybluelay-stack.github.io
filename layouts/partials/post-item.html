@@ -7,7 +7,7 @@
     {{- if eq $p.Section "projects" -}}
       {{- if eq $p.Params.status "active" -}}진행 중{{ range $p.Params.milestones }}{{ if eq .state "active" }}, {{ .id }}{{ end }}{{ end }}{{- else -}}완료{{- end -}}
     {{- else -}}
-      {{ $p.Date | time.Format "2006년 1월 2일" }}, {{ $p.ReadingTime }}분
+      <time datetime="{{ $p.Date.Format "2006-01-02" }}">{{ $p.Date | time.Format "2006년 1월 2일" }}</time>, 읽는 데 {{ $p.ReadingTime }}분
     {{- end -}}
   </p>
 </li>

@@ -3,7 +3,7 @@
   {{ if eq .Section "notes" }}<p class="post-book">『{{ .Params.book }}』, {{ .Params.book_author }}</p>{{ end }}
   <h1 class="post-title">{{ .Title }}</h1>
   {{ if in (slice "posts" "notes") .Section }}
-  <p class="post-meta">{{ .Date | time.Format "2006년 1월 2일" }}, {{ .ReadingTime }}분{{ if ne .Lastmod .Date }}, {{ .Lastmod | time.Format "2006년 1월 2일" }} 고침{{ end }}</p>
+  <p class="post-meta">{{ partial "post-meta.html" . }}</p>
   {{ end }}
   {{ partial "toc-linemap.html" . }}
   <div class="post-body">{{ .Content }}</div>

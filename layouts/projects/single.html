@@ -1,11 +1,11 @@
 {{ define "main" }}
 <article class="post wrap">
   <h1 class="post-title">{{ .Title }}</h1>
-  <p class="post-meta">
+  <p class="post-meta">{{ partial "post-meta.html" . }}<span class="status">
     {{- .Params.started | time.Format "2006년 1월" }}부터
     {{- if eq .Params.status "active" }}{{ range .Params.milestones }}{{ if eq .state "active" }}, {{ .id }} 진행 중{{ end }}{{ end }}{{ else }}, 완료{{ end }}
     {{- with .Params.repo }}, <a href="{{ . }}">저장소</a>{{ end -}}
-  </p>
+  </span></p>
   {{ partial "toc-linemap.html" . }}
   <div class="post-body">{{ .Content }}</div>
   <section class="project-milestones" aria-labelledby="milestones">

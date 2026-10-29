@@ -2,6 +2,7 @@
 title: "LLM 멀티 테넌트 게이트웨이"
 description: "매일 쓰는 개인 도구 네 개의 LLM 호출을 맥미니의 로컬 모델과 구독 CLI로 나눠 보내는 쿠버네티스 플랫폼."
 status: active
+date: 2026-10-29
 started: 2026-07-20
 repo: ""
 milestones:
