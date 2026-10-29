@@ -17,9 +17,11 @@
     {{ end }}
   </section>
   {{ end }}
+  {{ $posts := where site.RegularPages "Section" "in" (slice "posts" "notes") }}
+  {{ if $posts }}
   <section class="home-section" aria-labelledby="home-posts">
     <h2 class="label" id="home-posts">글</h2>
-    {{ $pager := .Paginate (where site.RegularPages "Section" "in" (slice "posts" "notes")) 20 }}
+    {{ $pager := .Paginate $posts 20 }}
     <ul class="post-list">
       {{ range $pager.Pages }}{{ partial "post-item.html" (dict "page" . "h" 3) }}{{ end }}
     </ul>
@@ -30,5 +32,6 @@
     </nav>
     {{ end }}
   </section>
+  {{ end }}
 </div>
 {{ end }}

@@ -1,16 +1,16 @@
 baseURL = "https://playdelaybluelay-stack.github.io/"
 title = "한예빈"
-languageCode = "ko"
+locale = "ko"
 defaultContentLanguage = "ko"
 hasCJKLanguage = true
 enableRobotsTXT = true
 
 [languages]
   [languages.ko]
-    languageName = "한국어"
+    label = "한국어"
     weight = 1
   [languages.en]
-    languageName = "English"
+    label = "English"
     weight = 2
     disabled = true # 영문 글이 생기면 false로
 
