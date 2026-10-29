@@ -167,5 +167,160 @@ class SafetyTest(unittest.TestCase):
             self.assertEqual(load_denylist(Path(d)), ["Foo Corp", "bar"])
 
 
+def note(slug="hello", publish="true", kind="설계", extra="", body="본문입니다."):
+    return (
+        f"---\npublish: {publish}\nslug: {slug}\npublished: 2026-11-09\nkind: {kind}\n{extra}---\n{body}\n"
+    )
+
+
+class SyncTest(unittest.TestCase):
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        root = Path(self._tmp.name)
+        self.vault = root / "vault"
+        self.content = root / "content"
+        self.vault.mkdir()
+        (self.content / "posts").mkdir(parents=True)
+        self.allowed = {"me@example.com"}
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def write(self, name, text):
+        path = self.vault / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+        return path
+
+    def plan(self):
+        return publish.plan_actions(self.vault, self.content, self.allowed)
+
+    def kinds(self):
+        return sorted((a.kind, a.slug) for a in self.plan())
+
+    def run_write(self):
+        publish.apply_actions(self.plan())
+
+    def test_only_publish_true_notes(self):
+        self.write("a.md", note(slug="a", publish="false"))
+        self.write("b.md", "---\ntitle: x\n---\n본문")
+        self.write("c.md", note(slug="c"))
+        self.assertEqual(self.kinds(), [("create", "c")])
+
+    def test_skips_templates_and_hidden(self):
+        self.write("Templates/Post Template.md", note(slug="tpl"))
+        self.write(".trash/old.md", note(slug="old"))
+        self.assertEqual(self.kinds(), [])
+
+    def test_create_then_same(self):
+        self.write("Hello.md", note())
+        self.assertEqual(self.kinds(), [("create", "hello")])
+        self.run_write()
+        index = (self.content / "posts" / "hello" / "index.md").read_text(encoding="utf-8")
+        self.assertIn('title: "Hello"', index)
+        self.assertIn("본문입니다.", index)
+        self.assertEqual(self.kinds(), [("same", "hello")])
+
+    def test_update_when_note_changes(self):
+        self.write("Hello.md", note())
+        self.run_write()
+        self.write("Hello.md", note(body="고친 본문"))
+        self.assertEqual(self.kinds(), [("update", "hello")])
+
+    def test_unpublish_deletes_generated_bundle(self):
+        self.write("Hello.md", note())
+        self.run_write()
+        self.write("Hello.md", note(publish="false"))
+        self.assertEqual(self.kinds(), [("delete", "hello")])
+        self.run_write()
+        self.assertFalse((self.content / "posts" / "hello").exists())
+
+    def test_refuses_to_overwrite_handwritten_bundle(self):
+        hand = self.content / "posts" / "hello"
+        hand.mkdir()
+        (hand / "index.md").write_text("---\ntitle: 손으로\n---\n", encoding="utf-8")
+        self.write("Hello.md", note())
+        self.assertEqual(self.kinds(), [("abort", "hello")])
+        self.run_write()
+        self.assertIn("손으로", (hand / "index.md").read_text(encoding="utf-8"))
+
+    def test_never_deletes_handwritten_bundle(self):
+        hand = self.content / "posts" / "mine"
+        hand.mkdir()
+        (hand / "index.md").write_text("---\ntitle: 손으로\n---\n", encoding="utf-8")
+        self.assertEqual(self.kinds(), [])
+
+    def test_duplicate_slug_aborts_both(self):
+        self.write("One.md", note(slug="same"))
+        self.write("Two.md", note(slug="same"))
+        actions = self.plan()
+        self.assertEqual([a.kind for a in actions], ["abort", "abort"])
+        self.assertIn("One.md", actions[0].detail + actions[1].detail)
+        self.assertIn("Two.md", actions[0].detail + actions[1].detail)
+
+    def test_missing_required_fields_abort(self):
+        self.write("a.md", note(slug="Bad Slug"))
+        self.write("b.md", note(slug="b", kind="잡담"))
+        self.write("c.md", note(slug="c", extra="section: notes\nbook_author: 저자\n"))
+        self.write("d.md", "---\npublish: true\nslug: d\nkind: 설계\n---\n본문")
+        self.assertEqual([a.kind for a in self.plan()], ["abort"] * 4)
+
+    def test_notes_section(self):
+        self.write("Book.md", note(slug="book", kind="", extra="section: notes\nbook: 책\nbook_author: 저자\n"))
+        self.assertEqual(self.kinds(), [("create", "book")])
+        self.run_write()
+        self.assertTrue((self.content / "notes" / "book" / "index.md").exists())
+
+    def test_safety_failure_aborts_without_writing(self):
+        self.write("Hello.md", note(body="연락 other@corp.com"))
+        self.assertEqual(self.kinds(), [("abort", "hello")])
+        self.run_write()
+        self.assertFalse((self.content / "posts" / "hello").exists())
+
+    def test_aborted_note_keeps_previous_bundle(self):
+        self.write("Hello.md", note())
+        self.run_write()
+        self.write("Hello.md", note(body="연락 other@corp.com"))
+        self.assertEqual(self.kinds(), [("abort", "hello")])
+        self.run_write()
+        self.assertTrue((self.content / "posts" / "hello" / "index.md").exists())
+
+    def test_links_between_published_notes(self):
+        self.write("First.md", note(slug="first", body="[[Second]] 참고, [[Secret]]"))
+        self.write("Second.md", note(slug="second"))
+        self.run_write()
+        index = (self.content / "posts" / "first" / "index.md").read_text(encoding="utf-8")
+        self.assertIn("[Second](/posts/second/) 참고, Secret", index)
+
+    def test_images_copied_into_bundle(self):
+        (self.vault / "Attachments").mkdir()
+        (self.vault / "Attachments" / "그림 1.png").write_bytes(b"png")
+        self.write("Hello.md", note(body="![[그림 1.png]]"))
+        self.run_write()
+        self.assertEqual((self.content / "posts" / "hello" / "그림-1.png").read_bytes(), b"png")
+
+    def test_fence_without_language_warns(self):
+        self.write("Hello.md", note(body="```\ncode\n```"))
+        action = self.plan()[0]
+        self.assertEqual(action.kind, "create")
+        self.assertIn("언어", action.detail)
+
+    def test_dry_run_writes_nothing(self):
+        self.write("Hello.md", note())
+        code = publish.main(["--vault", str(self.vault), "--content", str(self.content)])
+        self.assertEqual(code, 0)
+        self.assertEqual(list((self.content / "posts").iterdir()), [])
+
+    def test_main_returns_1_on_abort(self):
+        self.write("Hello.md", note(kind="잡담"))
+        code = publish.main(["--vault", str(self.vault), "--content", str(self.content), "--write"])
+        self.assertEqual(code, 1)
+
+    def test_read_allowed_email(self):
+        with tempfile.TemporaryDirectory() as d:
+            (Path(d) / "hugo.toml").write_text('[params]\n  email = "me@example.com"\n')
+            self.assertEqual(publish.allowed_emails(Path(d) / "hugo.toml"), {"me@example.com"})
+
+
 if __name__ == "__main__":
     unittest.main()

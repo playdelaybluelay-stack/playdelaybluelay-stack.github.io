@@ -3,8 +3,12 @@
 python3 scripts/publish.py           미리보기
 python3 scripts/publish.py --write   파일 쓰기
 """
+import argparse
 import json
 import re
+import shutil
+import sys
+from collections import Counter, namedtuple
 from pathlib import Path
 
 
@@ -193,3 +197,165 @@ def convert_body(body: str, link_map: dict, find_attachment) -> tuple[str, list]
     if fence is None and chunk:
         out.append(_convert_chunk("\n".join(chunk), link_map, find_attachment, assets))
     return "\n".join(out), assets
+
+
+# ---- sync ----
+
+Action = namedtuple("Action", "kind slug detail bundle files")
+SLUG = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+SKIP_DIRS = {"Templates"}
+LABELS = {"create": "생성", "update": "변경", "same": "그대로", "delete": "삭제", "abort": "중단"}
+DEFAULT_VAULT = Path.home() / "Library/Mobile Documents/iCloud~md~obsidian/Documents/real-world"
+SITE = Path(__file__).resolve().parent.parent
+
+
+def allowed_emails(hugo_toml: Path) -> set[str]:
+    m = re.search(r'^\s*email\s*=\s*"([^"]+)"', hugo_toml.read_text(encoding="utf-8"), re.M)
+    return {m.group(1)} if m else set()
+
+
+def _vault_files(vault):
+    for path in sorted(vault.rglob("*")):
+        rel = path.relative_to(vault).parts
+        if path.is_file() and not any(p.startswith(".") or p in SKIP_DIRS for p in rel):
+            yield path
+
+
+def _validate(meta):
+    section = meta.get("section") or "posts"
+    errors = []
+    if section not in ("posts", "notes"):
+        errors.append(f"section은 posts나 notes여야 한다: {section}")
+    if not SLUG.match(str(meta.get("slug") or "")):
+        errors.append("slug는 영문 소문자, 숫자, 하이픈만 쓴다")
+    if not meta.get("published"):
+        errors.append("published(발행일)가 없다")
+    if section == "posts" and meta.get("kind") not in ALLOWED_KINDS:
+        errors.append(f"kind는 {', '.join(ALLOWED_KINDS)} 중 하나여야 한다")
+    if section == "notes" and not (meta.get("book") and meta.get("book_author")):
+        errors.append("notes에는 book과 book_author가 필요하다")
+    return section, errors
+
+
+def _is_generated(bundle):
+    index = bundle / "index.md"
+    return index.exists() and "\ngenerated: obsidian\n" in index.read_text(encoding="utf-8")
+
+
+def _bare_fences(body):
+    count, inside = 0, False
+    for line in body.split("\n"):
+        if FENCE.match(line):
+            if not inside and line.strip() in ("```", "~~~"):
+                count += 1
+            inside = not inside
+    return count
+
+
+def plan_actions(vault: Path, content_dir: Path, allowed: set[str]) -> list:
+    denylist = load_denylist(vault)
+    files = list(_vault_files(vault))
+    by_name = {}
+    for f in files:
+        by_name.setdefault(f.name, f)
+
+    notes, actions = [], []
+    for path in files:
+        if path.suffix != ".md":
+            continue
+        text = path.read_text(encoding="utf-8")
+        if not re.search(r"^publish:\s*true\s*$", text, re.M):
+            continue
+        try:
+            meta, body = parse_note(text)
+        except PublishError as e:
+            actions.append(Action("abort", path.stem, f"{path.name}: {e}", None, None))
+            continue
+        if meta.get("publish") is not True:
+            continue
+        section, errors = _validate(meta)
+        notes.append(dict(path=path, text=text, meta=meta, body=body, section=section,
+                          slug=str(meta.get("slug") or path.stem), errors=errors))
+
+    seen = {(n["section"], n["slug"]) for n in notes}
+    counts = Counter(n["slug"] for n in notes)
+    for n in notes:
+        if counts[n["slug"]] > 1:
+            others = ", ".join(m["path"].name for m in notes if m["slug"] == n["slug"])
+            n["errors"].append(f"slug가 겹친다: {others}")
+    link_map = {n["path"].stem: f"/{n['section']}/{n['slug']}/" for n in notes if not n["errors"]}
+
+    for n in notes:
+        bundle = content_dir / n["section"] / n["slug"]
+        errors = list(n["errors"]) + check_safety(n["text"], denylist, allowed)
+        if bundle.exists() and not _is_generated(bundle):
+            errors.append("같은 이름의 번들을 사람이 직접 썼다. 덮어쓰지 않는다")
+        out_files = {}
+        if not errors:
+            try:
+                body, assets = convert_body(n["body"], link_map, by_name.get)
+            except PublishError as e:
+                errors.append(str(e))
+            else:
+                out_files["index.md"] = (to_front_matter(n["meta"], n["path"].stem) + "\n" + body).encode("utf-8")
+                for src, name in assets:
+                    out_files[name] = src.read_bytes()
+        if errors:
+            actions.append(Action("abort", n["slug"], f"{n['path'].name}: " + "; ".join(errors), None, None))
+            continue
+        warn = _bare_fences(n["body"])
+        detail = f"{n['path'].name}" + (f" (경고: 언어 이름이 없는 코드 펜스 {warn}개)" if warn else "")
+        if not bundle.exists():
+            kind = "create"
+        else:
+            current = {p.name: p.read_bytes() for p in bundle.iterdir() if p.is_file()}
+            kind = "same" if current == out_files else "update"
+        actions.append(Action(kind, n["slug"], detail, bundle, out_files))
+
+    for section in ("posts", "notes"):
+        base = content_dir / section
+        if not base.is_dir():
+            continue
+        for bundle in sorted(base.iterdir()):
+            if bundle.is_dir() and (section, bundle.name) not in seen and _is_generated(bundle):
+                actions.append(Action("delete", bundle.name, f"{section}/{bundle.name}", bundle, None))
+    return actions
+
+
+def apply_actions(actions: list) -> None:
+    for a in actions:
+        if a.kind in ("create", "update"):
+            if a.bundle.exists():
+                shutil.rmtree(a.bundle)
+            a.bundle.mkdir(parents=True)
+            for name, data in a.files.items():
+                (a.bundle / name).write_bytes(data)
+        elif a.kind == "delete":
+            shutil.rmtree(a.bundle)
+
+
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser(description="Obsidian 노트를 Hugo 글로 옮긴다. 기본은 미리보기.")
+    ap.add_argument("--vault", type=Path, default=DEFAULT_VAULT)
+    ap.add_argument("--content", type=Path, default=SITE / "content")
+    ap.add_argument("--write", action="store_true", help="파일을 실제로 쓴다")
+    args = ap.parse_args(argv)
+
+    if not load_denylist(args.vault):
+        print(f"경고: {args.vault / '.publish-denylist'} 이 없거나 비어 있다", file=sys.stderr)
+    hugo_toml = SITE / "hugo.toml"
+    allowed = allowed_emails(hugo_toml) if hugo_toml.exists() else set()
+    actions = plan_actions(args.vault, args.content, allowed)
+    if not actions:
+        print("발행할 노트 없음")
+    for a in actions:
+        print(f"{LABELS[a.kind]}\t{a.slug}\t{a.detail}")
+    if args.write:
+        apply_actions(a for a in actions if a.kind != "abort")
+    elif any(a.kind in ("create", "update", "delete") for a in actions):
+        print("미리보기다. 반영하려면 --write를 붙인다.")
+    return 1 if any(a.kind == "abort" for a in actions) else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
