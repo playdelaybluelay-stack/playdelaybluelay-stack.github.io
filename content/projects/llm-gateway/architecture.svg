@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 672 520" role="img" aria-labelledby="arch-title arch-desc" font-family="inherit" font-size="13" fill="currentColor">
+  <title id="arch-title">LLM 게이트웨이 구조</title>
+  <desc id="arch-desc">테넌트 네 개가 테넌트 키로 컨트롤 플레인에 작업을 맡긴다. 맥미니의 러너가 컨트롤 플레인에서 작업을 가져가 로컬 모델, Claude 구독, Codex 구독 중 하나로 실행한다. 외부 프로브가 바깥에서 게이트웨이를 측정한다.</desc>
+  <defs>
+    <marker id="arch-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+    </marker>
+  </defs>
+
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <rect x="16" y="16" width="496" height="64" rx="8"/>
+    <rect x="16" y="148" width="496" height="120" rx="8"/>
+    <rect x="16" y="336" width="640" height="168" rx="8" stroke-dasharray="6 4"/>
+    <rect x="544" y="148" width="112" height="120" rx="8"/>
+    <rect x="40" y="400" width="136" height="40" rx="6"/>
+    <rect x="264" y="376" width="200" height="32" rx="6"/>
+    <rect x="264" y="420" width="200" height="32" rx="6"/>
+    <rect x="264" y="464" width="200" height="32" rx="6"/>
+  </g>
+
+  <text x="32" y="42" font-weight="700">테넌트 네 개</text>
+  <text x="32" y="64" opacity=".75">대화형 비서, 활동 기록 분석, 공고 문서 구조화, 문서 작성 보조</text>
+
+  <text x="32" y="174" font-weight="700">컨트롤 플레인</text>
+  <text x="140" y="174" opacity=".75">M1~M2 맥미니 kind, M3부터 클라우드 k3s</text>
+  <text x="32" y="204">Gateway API (Go)</text>
+  <text x="32" y="228">작업 큐</text>
+  <text x="272" y="204">사용량 DB (Postgres)</text>
+  <text x="272" y="228">관리 화면, 관측</text>
+  <text x="32" y="254" opacity=".75">테넌트별 호출, 지연, 백엔드, 실패 기록</text>
+
+  <text x="560" y="174" font-weight="700">외부 프로브</text>
+  <text x="560" y="198" opacity=".75">Go 업타임</text>
+  <text x="560" y="216" opacity=".75">체커</text>
+  <text x="560" y="244" opacity=".75">바깥에서 SLI</text>
+
+  <text x="32" y="362" font-weight="700">맥미니 실행 평면 (집)</text>
+  <text x="200" y="362" opacity=".75">구독 자격증명은 여기에만 둔다</text>
+  <text x="56" y="425">Runner (Go)</text>
+  <text x="280" y="397">로컬 모델 (Ollama)</text>
+  <text x="280" y="441">Claude 구독, claude -p</text>
+  <text x="280" y="485">Codex 구독, codex exec</text>
+  <text x="488" y="430" opacity=".75">수정하지 않은 CLI를</text>
+  <text x="488" y="448" opacity=".75">작업 단위로 실행</text>
+
+  <g fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#arch-arrow)">
+    <path d="M200 80 V146"/>
+    <path d="M108 400 V270"/>
+    <path d="M176 420 H216 V392 H262"/>
+    <path d="M216 436 H262"/>
+    <path d="M216 420 V480 H262"/>
+    <path d="M544 208 H514"/>
+  </g>
+  <text x="212" y="118" opacity=".75">테넌트 키로 작업 등록</text>
+  <text x="120" y="300" opacity=".75">outbound pull</text>
+  <text x="120" y="318" opacity=".75">집으로 들어오는 포트 없음</text>
+</svg>

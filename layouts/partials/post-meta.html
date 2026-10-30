@@ -1,0 +1,1 @@
+<time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date | time.Format "2006년 1월 2일" }}</time> 발행, 읽는 데 {{ .ReadingTime }}분{{ if ne (.Lastmod.Format "2006-01-02") (.Date.Format "2006-01-02") }}, <time datetime="{{ .Lastmod.Format "2006-01-02" }}">{{ .Lastmod | time.Format "2006년 1월 2일" }}</time> 고침{{ end }}

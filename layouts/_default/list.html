@@ -1,1 +1,13 @@
-{{ define "main" }}<div class="wrap">{{ .Content }}</div>{{ end }}
+{{ define "main" }}
+<div class="page wrap">
+  <h1>{{ .Title }}</h1>
+  {{ .Content }}
+  {{ $pages := .RegularPages }}
+  {{ if eq .Section "projects" }}
+    {{ $pages = (where $pages "Params.status" "active") | append (where $pages "Params.status" "!=" "active") }}
+  {{ end }}
+  <ul class="post-list">
+    {{ range $pages }}{{ partial "post-item.html" (dict "page" . "h" 2) }}{{ end }}
+  </ul>
+</div>
+{{ end }}
