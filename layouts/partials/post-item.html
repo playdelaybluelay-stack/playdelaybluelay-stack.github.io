@@ -1,5 +1,5 @@
 {{ $p := .page }}
-{{ $kind := cond (eq $p.Section "notes") "독서" ($p.Params.kind | default "") }}
+{{ $kind := cond (eq $p.Section "notes") "독서" ($p.Params.category | default "") }}
 <li class="post-item">
   <h{{ .h }} class="pi-title">{{ with $kind }}<span class="kind">{{ . }}</span>{{ end }}<a href="{{ $p.RelPermalink }}">{{ $p.Title }}</a></h{{ .h }}>
   {{ with $p.Description }}<p class="desc">{{ . }}</p>{{ end }}

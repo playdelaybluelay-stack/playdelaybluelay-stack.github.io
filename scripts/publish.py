@@ -18,7 +18,7 @@ class PublishError(Exception):
 
 ALLOWED_KINDS = ("설계", "트러블슈팅", "회고", "개념")
 OBSIDIAN_ONLY = {"categories", "author", "topics", "status", "created", "url", "language"}
-OUTPUT_KEYS = ("title", "date", "description", "kind", "tags", "project", "milestone", "book", "book_author")
+OUTPUT_KEYS = ("title", "date", "description", "category", "tags", "project", "milestone", "book", "book_author")
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".avif"}
 
 FENCE = re.compile(r"^\s*(```|~~~)")
@@ -81,6 +81,7 @@ def to_front_matter(meta: dict, fallback_title: str) -> str:
     values = dict(meta)
     values["title"] = meta.get("title") or fallback_title
     values["date"] = meta.get("published")
+    values["category"] = meta.get("kind")  # Hugo에서 kind는 예약어라 이름을 바꿔 쓴다
     out = ["---"]
     for key in OUTPUT_KEYS:
         v = values.get(key)
