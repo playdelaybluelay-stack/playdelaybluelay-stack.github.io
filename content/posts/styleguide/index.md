@@ -3,7 +3,7 @@ title: "스타일 가이드: 본문 요소 점검용 원고"
 date: 2026-10-29
 draft: true
 description: "레이아웃과 서체를 바꿀 때 렌더링을 확인하는 원고. 공개되지 않는다."
-kind: "개념"
+category: "개념"
 tags: [점검]
 ---
 

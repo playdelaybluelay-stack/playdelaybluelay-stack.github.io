@@ -7,3 +7,4 @@ resources/
 
 docs/
 .superpowers/
+__pycache__/
