@@ -4,12 +4,16 @@ python3 scripts/publish.py           미리보기
 python3 scripts/publish.py --write   파일 쓰기
 """
 import argparse
+import html
 import json
 import re
 import shutil
 import sys
+import unicodedata
+import xml.etree.ElementTree as ET
 from collections import Counter, namedtuple
 from pathlib import Path
+from urllib.parse import unquote
 
 
 class PublishError(Exception):
@@ -100,7 +104,7 @@ def to_front_matter(meta: dict, fallback_title: str) -> str:
 
 SAFETY_PATTERNS = (
     ("이메일", re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")),
-    ("전화번호", re.compile(r"\b01[016789]-?\d{3,4}-?\d{4}\b")),
+    ("전화번호", re.compile(r"\b01[016789][-. ]?\d{3,4}[-. ]?\d{4}\b")),
     ("로컬 경로", re.compile(r"/Users/[^/\s]+|(?<![\w.])~/")),
     ("사설 IP", re.compile(r"\b(?:10\.\d{1,3}|192\.168|172\.(?:1[6-9]|2\d|3[01]))\.\d{1,3}\.\d{1,3}\b")),
     ("토큰", re.compile(
@@ -118,19 +122,58 @@ def load_denylist(vault: Path) -> list[str]:
     return [w for w in words if w and not w.startswith("#")]
 
 
+def _visible(s):
+    """전각 문자를 반각으로 바꾸고 보이지 않는 문자(제로폭 공백 등)를 뺀다."""
+    s = unicodedata.normalize("NFKC", s)
+    return "".join(ch for ch in s if unicodedata.category(ch) != "Cf")
+
+
+def _squash(s):
+    """차단어 비교용: 대소문자와 공백(줄바꿈 포함)을 무시한다."""
+    return "".join(ch for ch in _visible(s).casefold() if not ch.isspace())
+
+
 def check_safety(text: str, denylist: list[str], allowed_emails: set[str]) -> list[str]:
     problems = []
-    for n, line in enumerate(text.split("\n"), 1):
+    lines = text.split("\n")
+    # 렌더링하면 같은 글자가 되는 표기(전각, %40, &#64;)도 본다
+    variants = [[_visible(line) for line in lines]]
+    variants.append([_visible(html.unescape(unquote(line))) for line in variants[0]])
+    for n in range(len(lines)):
+        found = []
         for kind, pattern in SAFETY_PATTERNS:
-            for m in pattern.finditer(line):
-                if kind == "이메일" and m.group(0) in allowed_emails:
-                    continue
-                problems.append(f"줄 {n}: {kind} ({m.group(0)[:6]}…)")
-        lowered = line.lower()
+            for line in dict.fromkeys(v[n] for v in variants):
+                for m in pattern.finditer(line):
+                    if (kind == "이메일" and m.group(0) in allowed_emails) or (kind, m.group(0)) in found:
+                        continue
+                    found.append((kind, m.group(0)))
+                    problems.append(f"줄 {n + 1}: {kind} ({m.group(0)[:6]}…)")
+    # 차단어는 줄을 이어 붙여 본다. Markdown은 줄바꿈 하나를 공백으로 렌더링한다
+    for variant in variants:
+        joined, line_of = [], []
+        for n, line in enumerate(variant, 1):
+            squashed = _squash(line)
+            joined.append(squashed)
+            line_of += [n] * len(squashed)
+        joined = "".join(joined)
         for word in denylist:
-            if word.lower() in lowered:
-                problems.append(f"줄 {n}: 차단어 ({word})")
+            key, start = _squash(word), 0
+            while key and (i := joined.find(key, start)) != -1:
+                problem = f"줄 {line_of[i]}: 차단어 ({word})"
+                if problem not in problems:
+                    problems.append(problem)
+                start = i + 1
     return problems
+
+
+def svg_text(data: bytes) -> str:
+    """SVG에서 화면에 글자로 보이는 부분만 꺼낸다. 폰트 데이터나 Excalidraw 원본은 뺀다."""
+    try:
+        root = ET.fromstring(data)
+    except ET.ParseError as e:
+        raise PublishError(f"SVG를 읽을 수 없다: {e}")
+    texts = ("text", "title", "desc")
+    return "\n".join("".join(el.itertext()) for el in root.iter() if el.tag.rpartition("}")[2] in texts)
 
 
 # ---- body ----
@@ -300,9 +343,17 @@ def plan_actions(vault: Path, content_dir: Path, allowed: set[str]) -> list:
             except PublishError as e:
                 errors.append(str(e))
             else:
-                out_files["index.md"] = (to_front_matter(n["meta"], n["path"].stem) + "\n" + body).encode("utf-8")
+                index = to_front_matter(n["meta"], n["path"].stem) + "\n" + body
+                out_files["index.md"] = index.encode("utf-8")
+                # 파일 이름에서 온 제목, JSON 이스케이프를 푼 front matter 값처럼 원문에 없던 글자를 본다
+                errors += [f"발행본 {p}" for p in check_safety(index, denylist, allowed)]
                 for src, name in assets:
                     out_files[name] = src.read_bytes()
+                    if name.lower().endswith(".svg"):
+                        try:
+                            errors += [f"{name} {p}" for p in check_safety(svg_text(out_files[name]), denylist, allowed)]
+                        except PublishError as e:
+                            errors.append(str(e))
         if errors:
             actions.append(Action("abort", n["slug"], f"{n['path'].name}: " + "; ".join(errors), None, None))
             continue
