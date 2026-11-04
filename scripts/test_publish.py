@@ -162,6 +162,45 @@ class SafetyTest(unittest.TestCase):
         p = self.problems("첫 줄\n둘째 줄\n셋째 줄 010-1234-5678")
         self.assertIn("줄 3", p[0])
 
+    # ---- 우회 변형 ----
+
+    def test_safety_denylist_split_across_lines(self):
+        # Markdown은 줄바꿈 하나를 공백으로 렌더링한다
+        p = self.problems("우리 Foo\nCorp 이야기", deny=["Foo Corp"])
+        self.assertEqual(len(p), 1)
+        self.assertIn("줄 1", p[0])
+        self.assertEqual(len(self.problems("[[Foo\nCorp]]", deny=["Foo Corp"])), 1)
+
+    def test_safety_denylist_fullwidth(self):
+        self.assertEqual(len(self.problems("Ｆｏｏ Ｃｏｒｐ", deny=["Foo Corp"])), 1)
+
+    def test_safety_denylist_mixed_whitespace(self):
+        for text in ("Foo Corp", "Foo　Corp", "Foo  Corp", "Foo\tCorp", "Foo​ Corp"):
+            with self.subTest(text=text):
+                self.assertEqual(len(self.problems(text, deny=["Foo Corp"])), 1)
+        for text in ("홍 길동", "홍​길동"):
+            with self.subTest(text=text):
+                self.assertEqual(len(self.problems(text, deny=["홍길동"])), 1)
+
+    def test_safety_fullwidth_email_and_phone(self):
+        self.assertEqual(len(self.problems("연락 other＠corp.example")), 1)
+        self.assertEqual(len(self.problems("전화 ０１０-１２３４-５６７８")), 1)
+
+    def test_safety_phone_with_spaces_or_dots(self):
+        self.assertEqual(len(self.problems("전화 010 1234 5678")), 1)
+        self.assertEqual(len(self.problems("전화 010.1234.5678")), 1)
+
+    def test_safety_encoded_in_link_url(self):
+        self.assertEqual(len(self.problems("[메일](mailto:other%40corp.example)")), 1)
+        self.assertEqual(len(self.problems("[검색](https://x.example/?q=Foo%20Corp)", deny=["Foo Corp"])), 1)
+
+    def test_safety_html_entity(self):
+        self.assertEqual(len(self.problems("연락 other&#64;corp.example")), 1)
+
+    def test_safety_normalization_does_not_overblock(self):
+        self.assertEqual(self.problems("food corp, 100% 확실, 버전 1.0.10", deny=["Foo Corp"]), [])
+        self.assertEqual(self.problems("연락 me＠example.com"), [])
+
     def test_load_denylist(self):
         with tempfile.TemporaryDirectory() as d:
             self.assertEqual(load_denylist(Path(d)), [])
@@ -278,6 +317,47 @@ class SyncTest(unittest.TestCase):
         self.assertEqual(self.kinds(), [("abort", "hello")])
         self.run_write()
         self.assertFalse((self.content / "posts" / "hello").exists())
+
+    def deny(self, *words):
+        (self.vault / ".publish-denylist").write_text("\n".join(words) + "\n", encoding="utf-8")
+
+    def test_safety_checks_title_from_filename(self):
+        # title이 없으면 파일 이름이 제목으로 나간다
+        self.deny("Foo Corp")
+        self.write("Foo Corp 회고.md", note())
+        self.assertEqual(self.kinds(), [("abort", "hello")])
+
+    def test_safety_checks_decoded_front_matter(self):
+        self.write("a.md", note(slug="a", extra='title: "other\\u0040corp.example"\n'))
+        self.deny("Foo Corp")
+        self.write("b.md", note(slug="b", extra='description: "Foo\\u0020Corp"\n'))
+        self.assertEqual(self.kinds(), [("abort", "a"), ("abort", "b")])
+
+    def svg(self, name, inner):
+        (self.vault / "Attachments").mkdir(exist_ok=True)
+        (self.vault / "Attachments" / name).write_text(
+            f'<svg xmlns="http://www.w3.org/2000/svg">{inner}</svg>', encoding="utf-8"
+        )
+
+    def test_safety_checks_embedded_svg_text(self):
+        self.deny("Foo Corp")
+        self.svg("Drawing 1.excalidraw.svg", "<text>Foo</text><text>Corp</text>")
+        self.svg("Drawing 2.svg", "<text>other@corp.example</text>")
+        self.write("a.md", note(slug="a", body="![[Drawing 1.excalidraw]]"))
+        self.write("b.md", note(slug="b", body="![[Drawing 2.svg]]"))
+        self.assertEqual(self.kinds(), [("abort", "a"), ("abort", "b")])
+
+    def test_svg_scan_ignores_non_text_parts(self):
+        # 폰트 데이터나 그림 원본(payload)은 화면에 보이지 않는다
+        self.deny("bar")
+        self.svg(
+            "Drawing 1.excalidraw.svg",
+            "<!-- payload-start -->xBARx<!-- payload-end -->"
+            "<defs><style>@font-face { src: url(data:font/woff2;base64,AbarZ) }</style></defs>"
+            '<path d="M10.0.0.5 l1 1"/><text>안녕</text>',
+        )
+        self.write("Hello.md", note(body="![[Drawing 1.excalidraw]]"))
+        self.assertEqual(self.kinds(), [("create", "hello")])
 
     def test_aborted_note_keeps_previous_bundle(self):
         self.write("Hello.md", note())
